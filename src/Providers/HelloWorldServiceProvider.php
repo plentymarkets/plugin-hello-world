@@ -2,8 +2,10 @@
 namespace HelloWorld\Providers;
 
 use Plenty\Plugin\ServiceProvider;
-use IO\Helper\TemplateContainer;
 // use IO\Extensions\Functions\Partial;
+// use IO\Helper\TemplateContainer;
+// use IO\Helper\ComponentContainer;
+use IO\Helper\ResourceContainer;
 use Plenty\Plugin\Events\Dispatcher;
 use Plenty\Plugin\Templates\Twig;
 
@@ -36,10 +38,18 @@ class HelloWorldServiceProvider extends ServiceProvider
         //     return false;
         // }, 0);
 
-		$eventDispatcher->listen('IO.tpl.basket', function(TemplateContainer $container, $templateData)
+		// $eventDispatcher->listen('IO.tpl.basket', function(TemplateContainer $container, $templateData)
+        // {
+        //     $container->setTemplate('HelloWorld::content.ThemeBasketList');
+        //     return false;
+        // }, 0);
+
+		$eventDispatcher->listen("IO.Resources.Import", function (ResourceContainer $container)
         {
-            $container->setTemplate('HelloWorld::content.ThemeBasketList');
-            return false;
+            if ($container->getOriginComponentTemplate()=='Ceres::Basket.Components.BasketList')
+            {
+                $container->addScriptTemplate('HelloWorld::content.ThemeBasketList');
+            }
         }, 0);
     }
 }
