@@ -43,12 +43,12 @@ class HelloWorldServiceProvider extends ServiceProvider
         //     return false;
         // }, 0);
 
-		$eventDispatcher->listen("IO.Resources.Import", function (ComponentContainer $container)
-        {
-            if ($container->getOriginComponentTemplate()=='Ceres::Basket.Components.BasketList')
-            {
-                $container->addScriptTemplate('HelloWorld::content.ThemeBasketList');
-            }
-        }, 0);
+		// $eventDispatcher->listen("IO.Resources.Import", function (ComponentContainer $container)
+        // {
+        //     if ($container->getOriginComponentTemplate()=='Ceres::Basket.Components.BasketList')
+        //     {
+        //         $container->addScriptTemplate('HelloWorld::content.ThemeBasketList');
+        //     }
+        // }, 0);
     }
 }
