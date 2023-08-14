@@ -2,7 +2,7 @@
 namespace HelloWorld\Providers;
 
 use Plenty\Plugin\ServiceProvider;
-// use IO\Helper\TemplateContainer;
+use IO\Helper\TemplateContainer;
 // use IO\Extensions\Functions\Partial;
 use Plenty\Plugin\Events\Dispatcher;
 use Plenty\Plugin\Templates\Twig;
@@ -35,5 +35,11 @@ class HelloWorldServiceProvider extends ServiceProvider
         //     $container->setTemplate('HelloWorld::content.ThemeBasket');
         //     return false;
         // }, 0);
+
+		$eventDispatcher->listen('IO.tpl.basket', function(TemplateContainer $container, $templateData)
+        {
+            $container->setTemplate('HelloWorld::content.ThemeBasketList');
+            return false;
+        }, 0);
     }
 }
