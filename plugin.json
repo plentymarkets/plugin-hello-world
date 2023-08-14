@@ -1,6 +1,6 @@
 {
       "name":"HelloWorld",
-      "version": "0.0.15",
+      "version": "0.0.16",
       "description":"My first plugin",
       "namespace":"HelloWorld",
       "author":"plentysystems AG",
