@@ -26,7 +26,7 @@ class NewThemeServiceProvider extends ServiceProvider
      */
     public function boot(Twig $twig, Dispatcher $eventDispatcher)
     {
-        $eventDispatcher->listen('IO.tpl.basket', function(TemplateContainer $container)
+        $eventDispatcher->listen('IO.init.templates', function(TemplateContainer $container)
         {
             $container->setTemplate('Theme::content.ThemeSection');
             return false;
