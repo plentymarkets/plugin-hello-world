@@ -18,4 +18,8 @@ class ContentController extends Controller
 	{
 		return $twig->render('HelloWorld::content.hello');
 	}
+    public function newTheme(Twig $twig):string
+    {
+        return $twig->render('NewTheme::content.newTheme');
+    }
 }
