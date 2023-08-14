@@ -37,11 +37,11 @@ class HelloWorldServiceProvider extends ServiceProvider
         //     return false;
         // }, 0);
 
-		// $eventDispatcher->listen('IO.tpl.basket', function(TemplateContainer $container, $templateData)
-        // {
-        //     $container->setTemplate('HelloWorld::content.ThemeBasketList');
-        //     return false;
-        // }, 0);
+		$eventDispatcher->listen('IO.tpl.basket', function(TemplateContainer $container, $templateData)
+        {
+            $container->setTemplate('HelloWorld::content.ThemeBasketList');
+            return false;
+        }, 0);
 
 		// $eventDispatcher->listen("IO.Resources.Import", function (ComponentContainer $container)
         // {
