@@ -43,7 +43,7 @@ class HelloWorldServiceProvider extends ServiceProvider
         //     return false;
         // }, 0);
 
-		$eventDispatcher->listen("IO.Resources.Import", function (ResourceContainer $container)
+		$eventDispatcher->listen("IO.Resources.Import", function (ComponentContainer $container)
         {
             if ($container->getOriginComponentTemplate()=='Ceres::Basket.Components.BasketList')
             {
