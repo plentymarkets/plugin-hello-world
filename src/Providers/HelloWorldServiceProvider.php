@@ -3,9 +3,8 @@ namespace HelloWorld\Providers;
 
 use Plenty\Plugin\ServiceProvider;
 // use IO\Extensions\Functions\Partial;
-// use IO\Helper\TemplateContainer;
-// use IO\Helper\ComponentContainer;
-use IO\Helper\ResourceContainer;
+use IO\Helper\TemplateContainer;
+use IO\Helper\ComponentContainer;
 use Plenty\Plugin\Events\Dispatcher;
 use Plenty\Plugin\Templates\Twig;
 
