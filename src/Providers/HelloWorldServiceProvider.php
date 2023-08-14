@@ -23,10 +23,16 @@ class HelloWorldServiceProvider extends ServiceProvider
 
 	public function boot(Twig $twig, Dispatcher $eventDispatcher)
     {
-        $eventDispatcher->listen('IO.init.templates', function(Partial $partial)
+        // $eventDispatcher->listen('IO.init.templates', function(Partial $partial)
+        // {
+        //    $partial->set('footer', 'HelloWorld::content.ThemeFooter');
+        // }, 0);
+        // return false;
+
+		$eventDispatcher->listen('IO.tpl.basket', function(TemplateContainer $container, $templateData)
         {
-           $partial->set('footer', 'HelloWorld::content.ThemeFooter');
+            $container->setTemplate('HelloWorld::content.ThemeBasket');
+            return false;
         }, 0);
-        return false;
     }
 }
