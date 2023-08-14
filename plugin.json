@@ -1,8 +1,17 @@
 {
       "name":"HelloWorld",
+      "version": "0.0.2",
       "description":"My first plugin",
       "namespace":"HelloWorld",
       "author":"plentysystems AG",
       "type":"template",
-      "serviceProvider":"HelloWorld\\Providers\\HelloWorldServiceProvider"
+      "serviceProvider":"HelloWorld\\Providers\\HelloWorldServiceProvider",
+      "dataProviders":
+      [
+          {
+              "key"           :"HelloWorld\\Containers\\HelloWorldContainer",
+              "name"          :"Dark background",
+              "description"   :"Change the background colour of the plentyShop LTS template"
+          }
+      ]
 }
