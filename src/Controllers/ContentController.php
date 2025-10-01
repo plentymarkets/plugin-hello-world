@@ -18,4 +18,13 @@ class ContentController extends Controller
 	{
 		return $twig->render('HelloWorld::content.hello');
 	}
+
+    /**
+     * @param Twig $twig
+     * @return string
+     */
+    public function sayHelloDev(Twig $twig):string
+    {
+        return $twig->render('HelloWorld::content.helloDev');
+    }
 }
