@@ -35,6 +35,57 @@ For more basic information on package installation via Composer see this [introd
 - Overview of plentymarkets [plugin interfaces](https://developers.plentymarkets.com/dev-doc/basics#guide-interface)
 - The plentymarkets [REST API](https://developers.plentymarkets.com/rest-doc/introduction)
 
+---
+# ⚙️ Plentymarkets Plugin Build (CI Example)
+
+This repository includes a **CI pipeline example** showing how to integrate Plentymarkets plugin builds into **GitHub Actions**.
+
+It is a **template** you can adapt to your own plugin repository.
+
+---
+
+## 🔄 What the pipeline does
+
+On each run (push or manual trigger), the pipeline will:
+
+* Request a fresh login token from Plentymarkets (credentials from GitHub Secrets).
+* Trigger a **Dev Mode build** for the configured system and plugin set.
+* Monitor the build until completion.
+* Report success ✅ or detailed errors ❌.
+
+---
+
+## 🔑 Setup
+
+### 1. Get system credentials
+Use your Plenty credentials
+* **username**
+* **password**
+* **system ID** (e.g., `pXXXXX`)
+
+### 2. Add GitHub Secrets
+
+In your repository, go to:
+**Settings** → **Secrets and variables** → **Actions**
+
+Add the following secrets:
+
+* `PLENTY_USERNAME` → your API username
+* `PLENTY_PASSWORD` → your API password
+
+### 3. Configure system and set IDs in workflow
+
+Create the workflow file: **`.github/workflows/build.yml`**
+
+Add the **environment** section to match your system and plugin set IDs:
+
+```yaml
+env:
+  PLENTY_ID: 70503   # your Plentymarkets system ID (from the email, e.g. p70503)
+  SET_ID: 1          # the plugin set you want to build inside that system
+```
+Note: You need a GitHub Action for each plugin set.
+
 ## Join our community
 
 Sign up today and become a member of our [forum](https://forum.plentymarkets.com/c/plugin-entwicklung). Discuss the latest trends in plugin development and share your ideas with our community.
@@ -46,3 +97,4 @@ Visit our forum and find the latest news and updates in our [Changelog](https://
 ## License
 
 This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE - see the [LICENSE.md](/LICENSE.md) file for details.
+
