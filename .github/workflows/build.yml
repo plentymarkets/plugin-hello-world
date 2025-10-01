@@ -1,0 +1,118 @@
+# This GitHub Action workflow allows you to manually trigger a Plentymarkets plugin build.
+# It authenticates, triggers the build, and then polls for the build status until completion.
+
+name: Manual Plentymarkets Plugin Build - fetch status
+
+# This workflow can only be triggered manually from the GitHub Actions tab.
+on:
+  workflow_dispatch:
+
+jobs:
+  build-plugin-set:
+    # The name of the job that will appear in the GitHub UI.
+    name: Trigger Plugin Build
+    # This job runs on the latest version of Ubuntu provided by GitHub.
+    runs-on: ubuntu-latest
+
+    # Environment variables available to all steps in this job.
+    env:
+      SET_ID: 1 # The ID of the plugin set you want to build.
+      PLENTY_ID: 70503 # The Plentymarkets system ID for auth and build.
+
+    steps:
+      # Step 1: Authenticate with the Plentymarkets API and extract the access token.
+      - name: Authenticate and Get Token
+        id: login
+        run: |
+          # Send a POST request with username and password to the login endpoint.
+          # The '-s' flag makes curl silent. The response is piped to 'jq' to parse the JSON.
+          # 'jq -r .access_token' extracts the value of the 'access_token' key as a raw string.
+          ACCESS_TOKEN=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"username": "${{ secrets.PLENTY_USERNAME }}", "password": "${{ secrets.PLENTY_PASSWORD }}"}' \
+            https://p${{ env.PLENTY_ID }}.my.plentysystems.com/rest/login | jq -r '.access_token')
+
+          # Check if the token was successfully retrieved. If not, fail the workflow.
+          if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
+            echo "::error::Failed to retrieve access token. Please check your PLENTY_USERNAME and PLENTY_PASSWORD secrets."
+            exit 1
+          fi
+          
+          # Add the token to the GITHUB_ENV so it's available as an environment variable in subsequent steps.
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          
+          # Mask the token in the workflow logs to prevent it from being accidentally exposed.
+          echo "::add-mask::$ACCESS_TOKEN"
+          
+          echo "Successfully retrieved and masked access token."
+
+      # Step 2: Use the access token to trigger the plugin build.
+      - name: Trigger Plugin Build
+        run: |
+          # Send a POST request to the build endpoint.
+          # The '-f' flag makes curl fail with an error if the server returns an HTTP error code (like 401 or 500).
+          # The '-d ''' sends an empty body with the request.
+          echo "Triggering the build process for plugin set ${{ env.SET_ID }}..."
+          curl -f -X POST \
+            -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '' \
+            https://p${{ env.PLENTY_ID }}.my.plentysystems.com/rest/plugin_sets/${{ env.SET_ID }}/dev_mode/build
+          
+          echo "Plugin build triggered successfully!"
+
+      # Step 3: Poll the build status until it is finished or has failed.
+      - name: Poll Build Status
+        run: |
+          STATUS_URL="https://p${{ env.PLENTY_ID }}.my.plentysystems.com/rest/plugin_sets/${{ env.SET_ID }}/dev_mode/build"
+          
+          echo "⏳ Polling build status from $STATUS_URL"
+          while true; do
+            # The curl command needs the Authorization header to access the status endpoint.
+            STATUS=$(curl -s -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}" "$STATUS_URL")
+          
+            START=$(echo "$STATUS" | jq -r '.startTime')
+            FINISH=$(echo "$STATUS" | jq -r '.finishTime')
+            STEPS=$(echo "$STATUS" | jq '.stepsStatus')
+            ERRORS=$(echo "$STATUS" | jq '.buildErrors')
+          
+            echo "Start: $START"
+            echo "Finish: $FINISH"
+            echo "Steps: $STEPS"
+            echo "Errors: $ERRORS"
+            echo "--------------------------"
+          
+            # Detect terminal conditions
+            ALL_FINISHED=$(echo "$STEPS" | jq -r 'to_entries | all(.value=="finished")')
+            ANY_FAILED=$(echo "$STEPS" | jq -r 'to_entries | any(.value=="failed")')
+          
+            if [ "$ANY_FAILED" == "true" ] || \
+               { [ "$FINISH" != "null" ] && [ "$FINISH" != "0001-01-01T00:00:00Z" ] && [ -n "$FINISH" ]; } || \
+               [ "$ALL_FINISHED" == "true" ]; then
+          
+              echo "🏁 Build finished (FINISH=$FINISH)"
+          
+              # === Check for build errors ===
+              GENERAL_ERR=$(echo "$ERRORS" | jq -r '.general')
+              ALLOWED_ERR=$(echo "$ERRORS" | jq -r '.allowedCalls')
+          
+              if [ -n "$GENERAL_ERR" ] && [ "$GENERAL_ERR" != "" ]; then
+                echo "❌ General build error: $GENERAL_ERR"
+                exit 1
+              fi
+          
+              if [ "$ALLOWED_ERR" != "[]" ]; then
+                PARSED=$(echo "$ALLOWED_ERR" | jq -e . 2>/dev/null || true)
+                if [ -n "$PARSED" ] && [ "$PARSED" != "[]" ]; then
+                  echo "❌ Allowed calls check failed:"
+                  echo "$PARSED" | jq
+                  exit 1
+                fi
+              fi
+          
+              echo "✅ Build completed successfully without errors"
+              break
+            fi
+          
+            sleep 2
+          done
