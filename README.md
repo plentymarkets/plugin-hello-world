@@ -86,6 +86,11 @@ env:
 ```
 Note: You need a GitHub Action for each plugin set.
 
+💻 Alternative via CLI (for multiple systems)
+If you want to test against multiple systems, use the plentymarkets/dev-sync CLI.
+
+Find the plentymarkets/dev-sync repository here [plentymarkets/dev-sync](https://github.com/plentymarkets/dev-sync).
+
 ## Join our community
 
 Sign up today and become a member of our [forum](https://forum.plentymarkets.com/c/plugin-entwicklung). Discuss the latest trends in plugin development and share your ideas with our community.
