@@ -2,17 +2,17 @@
 
 # Hello World plugin
 
-This is the **Hello World** plugin developed by plentymarkets.
+This is the **Hello World** plugin developed by PlentyONE.
 
 The master branch of this repository contains a simple plugin that renders a template and registers a route under which the template is displayed. Check out the branch [further_options](https://github.com/plentymarkets/plugin-hello-world/tree/further_options) to see more possibilities.
 
 ## Requirements
 
-This is a plugin for [plentymarkets 7](https://www.plentymarkets.com). No other plugins are required for running the plugin.
+This is a plugin for [PlentyONE](https://www.plentyone.com/). No other plugins are required for running the plugin.
 
 ## Installing
 
-For detailed information about plugin provisioning refer to [plentymarkets developers](https://developers.plentymarkets.com/dev-doc/basics#plugin-provisioning).
+For detailed information about plugin provisioning refer to [PlentyONE developers](https://developers.plentymarkets.com/dev-doc/basics#plugin-provisioning).
 
 
 Install using [Composer](https://getcomposer.org/) and a `composer.json`.
@@ -33,7 +33,7 @@ For more basic information on package installation via Composer see this [introd
 
 - Learn how to create your [first plentymarkets plugin](https://developers.plentymarkets.com/tutorials/helloworld)
 - Overview of plentymarkets [plugin interfaces](https://developers.plentymarkets.com/dev-doc/basics#guide-interface)
-- The plentymarkets [REST API](https://developers.plentymarkets.com/rest-doc/introduction)
+- The PlentyONE [REST API](https://developers.plentymarkets.com/rest-doc/introduction)
 
 ---
 # ⚙️ PlentyOne Plugin Build (CI Example)
@@ -48,7 +48,7 @@ It is a **template** you can adapt to your own plugin repository.
 
 On each run (push or manual trigger), the pipeline will:
 
-* Request a fresh login token from Plentymarkets (credentials from GitHub Secrets).
+* Request a fresh login token from PlentyONE (credentials from GitHub Secrets).
 * Trigger a **Dev Mode build** for the configured system and plugin set.
 * Monitor the build until completion.
 * Report success ✅ or detailed errors ❌.
@@ -81,7 +81,7 @@ Add the **environment** section to match your system and plugin set IDs:
 
 ```yaml
 env:
-  PLENTY_ID: 70503   # your Plentymarkets system ID (from the email, e.g. p70503)
+  PLENTY_ID: 70503   # your PlentyONE system ID (from the email, e.g. p70503)
   SET_ID: 1          # the plugin set you want to build inside that system
 ```
 Note: You need a GitHub Action for each plugin set.
