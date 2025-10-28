@@ -91,13 +91,6 @@ If you want to test against multiple systems, use the plentymarkets/dev-sync CLI
 
 Find the plentymarkets/dev-sync repository here [plentymarkets/dev-sync](https://github.com/plentymarkets/dev-sync).
 
-## Join our community
-
-Sign up today and become a member of our [forum](https://forum.plentymarkets.com/c/plugin-entwicklung). Discuss the latest trends in plugin development and share your ideas with our community.
-
-## Versioning
-
-Visit our forum and find the latest news and updates in our [Changelog](https://forum.plentymarkets.com/c/changelog?order=created).
 
 ## License
 
