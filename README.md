@@ -36,7 +36,7 @@ For more basic information on package installation via Composer see this [introd
 - The plentymarkets [REST API](https://developers.plentymarkets.com/rest-doc/introduction)
 
 ---
-# ⚙️ Plentymarkets Plugin Build (CI Example)
+# ⚙️ PlentyOne Plugin Build (CI Example)
 
 This repository includes a **CI pipeline example** showing how to integrate Plentymarkets plugin builds into **GitHub Actions**.
 
