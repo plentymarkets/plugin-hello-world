@@ -19,6 +19,7 @@ class ContentController extends Controller
 		return $twig->render('HelloWorld::content.hello');
 	}
 
+
     /**
      * @param Twig $twig
      * @return string
