@@ -11,15 +11,6 @@ use Plenty\Plugin\Templates\Twig;
 class ContentController extends Controller
 {
 
-
-
-
-
-
-
-
-
-
 	/**
 	 * @param Twig $twig
 	 * @return string
