@@ -4,5 +4,6 @@
       "namespace":"HelloWorld",
       "author":"plentysystems AG",
       "type":"template",
-      "serviceProvider":"HelloWorld\\Providers\\HelloWorldServiceProvider"
+      "serviceProvider":"HelloWorld\\Providers\\HelloWorldServiceProvider",
+      "version" : "1.0.0"
 }
