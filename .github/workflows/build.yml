@@ -3,116 +3,166 @@
 
 name: Manual Plentymarkets Plugin Build - fetch status
 
-# This workflow can only be triggered manually from the GitHub Actions tab.
 on:
   workflow_dispatch:
 
 jobs:
   build-plugin-set:
-    # The name of the job that will appear in the GitHub UI.
     name: Trigger Plugin Build
-    # This job runs on the latest version of Ubuntu provided by GitHub.
     runs-on: ubuntu-latest
 
-    # Environment variables available to all steps in this job.
     env:
-      SET_ID: 1 # The ID of the plugin set you want to build.
-      PLENTY_ID: 70503 # The Plentymarkets system ID for auth and build.
+      SET_ID: 1
+      PLENTY_ID: 70503
 
     steps:
-      # Step 1: Authenticate with the Plentymarkets API and extract the access token.
       - name: Authenticate and Get Token
         id: login
         run: |
-          # Send a POST request with username and password to the login endpoint.
-          # The '-s' flag makes curl silent. The response is piped to 'jq' to parse the JSON.
-          # 'jq -r .access_token' extracts the value of the 'access_token' key as a raw string.
-          ACCESS_TOKEN=$(curl -s -X POST \
-            -H "Content-Type: application/json" \
-            -d '{"username": "${{ secrets.PLENTY_USERNAME }}", "password": "${{ secrets.PLENTY_PASSWORD }}"}' \
-            https://p${{ env.PLENTY_ID }}.my.plentysystems.com/rest/login | jq -r '.access_token')
+          echo "🔐 Authenticating with Plentymarkets..."
+          BASE_URL="https://p${{ env.PLENTY_ID }}.my.plentysystems.com"
+          LOGIN_URL="${BASE_URL}/rest/login"
 
-          # Check if the token was successfully retrieved. If not, fail the workflow.
-          if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
-            echo "::error::Failed to retrieve access token. Please check your PLENTY_USERNAME and PLENTY_PASSWORD secrets."
+          PAYLOAD=$(jq -nc --arg u "${{ secrets.PLENTY_USERNAME }}" --arg p "${{ secrets.PLENTY_PASSWORD }}" '{username:$u,password:$p}')
+          RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$LOGIN_URL")
+
+          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token // empty')
+          EXPIRES_IN=$(echo "$RESPONSE" | jq -r '.expires_in // 0')
+
+          if [ -z "$ACCESS_TOKEN" ]; then
+            echo "::error::Failed to retrieve access token. Check your credentials or PLENTY_ID."
+            echo "Server response:"
+            echo "$RESPONSE"
             exit 1
           fi
-          
-          # Add the token to the GITHUB_ENV so it's available as an environment variable in subsequent steps.
-          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
-          
-          # Mask the token in the workflow logs to prevent it from being accidentally exposed.
-          echo "::add-mask::$ACCESS_TOKEN"
-          
-          echo "Successfully retrieved and masked access token."
 
-      # Step 2: Use the access token to trigger the plugin build.
+          echo "::add-mask::$ACCESS_TOKEN"
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          echo "✅ Access token retrieved successfully."
+
       - name: Trigger Plugin Build
         run: |
-          # Send a POST request to the build endpoint.
-          # The '-f' flag makes curl fail with an error if the server returns an HTTP error code (like 401 or 500).
-          # The '-d ''' sends an empty body with the request.
-          echo "Triggering the build process for plugin set ${{ env.SET_ID }}..."
-          curl -f -X POST \
+          BASE_URL="https://p${{ env.PLENTY_ID }}.my.plentysystems.com"
+          BUILD_URL="${BASE_URL}/rest/plugin_sets/${{ env.SET_ID }}/dev_mode/build"
+
+          echo "🚀 Starting plugin build for set ${{ env.SET_ID }} on PID ${{ env.PLENTY_ID }}"
+          HTTP_CODE=$(curl -s -o /tmp/build_response.json -w "%{http_code}" \
+            -X POST \
             -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '' \
-            https://p${{ env.PLENTY_ID }}.my.plentysystems.com/rest/plugin_sets/${{ env.SET_ID }}/dev_mode/build
-          
-          echo "Plugin build triggered successfully!"
+            "$BUILD_URL")
 
-      # Step 3: Poll the build status until it is finished or has failed.
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 202 ] || [ "$HTTP_CODE" -eq 204 ]; then
+            echo "✅ Build request sent successfully (HTTP $HTTP_CODE)"
+          else
+            echo "❌ Build request failed (HTTP $HTTP_CODE)"
+            RESPONSE=$(cat /tmp/build_response.json | jq -r '.message // empty')
+
+            if [ "$HTTP_CODE" -eq 400 ]; then
+              echo "🧾 Server message: ${RESPONSE:-No message provided.}"
+            elif [ "$HTTP_CODE" -eq 401 ]; then
+              echo "🔒 Unauthorized — token may be expired or invalid."
+            elif [ "$HTTP_CODE" -ge 500 ]; then
+              echo "💥 Server error — API returned $HTTP_CODE."
+            fi
+            exit 1
+          fi
+
       - name: Poll Build Status
         run: |
-          STATUS_URL="https://p${{ env.PLENTY_ID }}.my.plentysystems.com/rest/plugin_sets/${{ env.SET_ID }}/dev_mode/build"
-          
-          echo "⏳ Polling build status from $STATUS_URL"
-          while true; do
-            # The curl command needs the Authorization header to access the status endpoint.
+          BASE_URL="https://p${{ env.PLENTY_ID }}.my.plentysystems.com"
+          STATUS_URL="${BASE_URL}/rest/plugin_sets/${{ env.SET_ID }}/dev_mode/build"
+
+          echo "⏳ Waiting for build to finish..."
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
             STATUS=$(curl -s -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}" "$STATUS_URL")
-          
-            START=$(echo "$STATUS" | jq -r '.startTime')
-            FINISH=$(echo "$STATUS" | jq -r '.finishTime')
-            STEPS=$(echo "$STATUS" | jq '.stepsStatus')
-            ERRORS=$(echo "$STATUS" | jq '.buildErrors')
-          
-            echo "Start: $START"
-            echo "Finish: $FINISH"
-            echo "Steps: $STEPS"
-            echo "Errors: $ERRORS"
-            echo "--------------------------"
-          
-            # Detect terminal conditions
-            ALL_FINISHED=$(echo "$STEPS" | jq -r 'to_entries | all(.value=="finished")')
-            ANY_FAILED=$(echo "$STEPS" | jq -r 'to_entries | any(.value=="failed")')
-          
+
+            if [ -z "$STATUS" ] || [ "$STATUS" = "null" ] || ! echo "$STATUS" | jq empty >/dev/null 2>&1; then
+              echo "❌ Plugin deploy not executed for the set"
+              exit 1
+            fi
+
+            ERROR_MSG=$(echo "$STATUS" | jq -r '.error.message // empty')
+            if [ -n "$ERROR_MSG" ]; then
+              echo "❌ Plugin deploy not executed for the set"
+              echo "Aborting build."
+              exit 1
+            fi
+
+            STEPS_JSON=$(echo "$STATUS" | jq '.stepsStatus // {}')
+            STEPS_COUNT=$(echo "$STEPS_JSON" | jq 'keys | length')
+
+            if [ "$STEPS_COUNT" -eq 0 ]; then
+              echo "❌ Plugin deploy not executed for the set"
+              exit 1
+            fi
+
+            ALL_FINISHED=$(echo "$STEPS_JSON" | jq -r 'to_entries | all(.value=="finished")')
+            ANY_FAILED=$(echo "$STEPS_JSON" | jq -r 'to_entries | any(.value=="failed")')
+            FINISH=$(echo "$STATUS" | jq -r '.finishTime // ""')
+            ERRORS=$(echo "$STATUS" | jq '.buildErrors // {}')
+
             if [ "$ANY_FAILED" == "true" ] || \
-               { [ "$FINISH" != "null" ] && [ "$FINISH" != "0001-01-01T00:00:00Z" ] && [ -n "$FINISH" ]; } || \
-               [ "$ALL_FINISHED" == "true" ]; then
-          
-              echo "🏁 Build finished (FINISH=$FINISH)"
-          
-              # === Check for build errors ===
-              GENERAL_ERR=$(echo "$ERRORS" | jq -r '.general')
-              ALLOWED_ERR=$(echo "$ERRORS" | jq -r '.allowedCalls')
-          
-              if [ -n "$GENERAL_ERR" ] && [ "$GENERAL_ERR" != "" ]; then
-                echo "❌ General build error: $GENERAL_ERR"
+               [ "$ALL_FINISHED" == "true" ] || \
+               { [ "$FINISH" != "" ] && [ "$FINISH" != "0001-01-01T00:00:00Z" ]; }; then
+
+              echo "🏁 Build finished"
+
+              GENERAL_ERR=$(echo "$ERRORS" | jq -r '.general // empty')
+              ALLOWED_ERR=$(echo "$ERRORS" | jq -r '.allowedCalls // []')
+
+              if [ -n "$GENERAL_ERR" ]; then
+                echo ""
+                echo "❌ General build error:"
+                echo "   $GENERAL_ERR"
+                echo "-------------------------------------------------"
+                echo "FAILURES!"
                 exit 1
               fi
-          
+
               if [ "$ALLOWED_ERR" != "[]" ]; then
                 PARSED=$(echo "$ALLOWED_ERR" | jq -e . 2>/dev/null || true)
                 if [ -n "$PARSED" ] && [ "$PARSED" != "[]" ]; then
-                  echo "❌ Allowed calls check failed:"
-                  echo "$PARSED" | jq
+                  COUNT=$(echo "$PARSED" | jq '[.[].code_errors[]] | length')
+                  echo ""
+                  echo "There were $COUNT failure(s):"
+                  echo ""
+                  INDEX=1
+                  echo "$PARSED" | jq -c '.[]?.code_errors[]?' | while read -r err; do
+                    FILE=$(echo "$err" | jq -r '.file')
+                    LINE=$(echo "$err" | jq -r '.line')
+                    MSG=$(echo "$err" | jq -r '.msg')
+                    PREVIEW=$(echo "$err" | jq -r '.preview')
+                    echo "❌ Failure #$INDEX:"
+                    echo "   $FILE:$LINE"
+                    echo "   $MSG"
+                    if [ -n "$PREVIEW" ] && [ "$PREVIEW" != "null" ]; then
+                      echo "   Preview: $PREVIEW"
+                    fi
+                    echo ""
+                    INDEX=$((INDEX+1))
+                  done
+                  echo "-------------------------------------------------"
+                  echo "FAILURES!"
+                  echo "Tests: $COUNT, Assertions: 0, Failures: $COUNT."
                   exit 1
                 fi
               fi
-          
-              echo "✅ Build completed successfully without errors"
+
+              TOTAL=$(echo "$STEPS_JSON" | jq 'keys | length')
+              echo "✅ OK ($TOTAL tests, 0 failures)"
               break
             fi
-          
+
+            ATTEMPT=$((ATTEMPT + 1))
             sleep 2
           done
+
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "::error::Build status check timed out after $MAX_ATTEMPTS attempts"
+            exit 1
+          fi
