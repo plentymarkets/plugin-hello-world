@@ -16,6 +16,12 @@ class ContentController extends Controller
 	 */
 	public function sayHello(Twig $twig):string
 	{
-		return $twig->render('HelloWorld::content.hello');
+        // PHP 8.2: Deprecated - Creation of dynamic property ... is deprecated
+        $this->someUndeclaredProperty = 'boom';
+
+        // PHP 8.2: Deprecated - Function utf8_encode() is deprecated
+        $x = utf8_encode('test');
+
+        return $twig->render('HelloWorld::content.hello', ['x' => $x]);
 	}
 }
