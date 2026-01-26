@@ -18,6 +18,7 @@ class DeprecatedShowcaseController extends Controller
 
     public function demo(Twig $twig): string
     {
+        var_dump("here");
         $this->dynamicPropOne = 'value 1';
         $this->dynamicPropTwo = 123;
 
