@@ -7,6 +7,15 @@ use Plenty\Plugin\Templates\Twig;
 
 class DeprecatedShowcaseController extends Controller
 {
+    /**
+     * @var string
+     */
+    private $dynamicPropOne;
+    /**
+     * @var int
+     */
+    private $dynamicPropTwo;
+
     public function demo(Twig $twig): string
     {
         $this->dynamicPropOne = 'value 1';
