@@ -1,6 +1,6 @@
 <?php
 
-var_dump("BOOTSTRAP");
+echo "bootstrap.php loaded\n";
 $encoded = utf8_encode("Ștefan");
 if ($encoded === false) {
     throw new RuntimeException("utf8_encode failed");
