@@ -1,5 +1,6 @@
 <?php
 
+var_dump("BOOTSTRAP");
 $encoded = utf8_encode("Ștefan");
 if ($encoded === false) {
     throw new RuntimeException("utf8_encode failed");
