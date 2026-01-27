@@ -19,8 +19,4 @@ class HelloWorldServiceProvider extends ServiceProvider
 	{
 		$this->getApplication()->register(HelloWorldRouteServiceProvider::class);
 	}
-
-	public function bootstrap(Application $app) {
-		throw new Exception('Should not boot');
-	}
 }
