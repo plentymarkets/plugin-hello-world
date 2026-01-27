@@ -2,8 +2,6 @@
 
 namespace HelloWorld;
 
-class Legacy {
+readonly class BreaksIn82 {
+    public $value;
 }
-
-$legacy = new Legacy();
-$legacy->foo = 'bar';
