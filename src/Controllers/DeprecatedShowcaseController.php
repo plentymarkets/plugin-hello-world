@@ -9,7 +9,6 @@ class DeprecatedShowcaseController extends Controller
 {
     public function demo(Twig $twig): string
     {
-        app( \HelloWorld\Controllers\HelloWorld\Controllers\TestClass::class)->run();
         $array = [1, 2, 3];
         each($array);
 
