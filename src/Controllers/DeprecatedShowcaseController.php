@@ -12,9 +12,6 @@ class DeprecatedShowcaseController extends Controller
         $array = [1, 2, 3];
         each($array);
 
-        $testClass = new TestClass();
-        $testClass->name = "Test";
-
         $this->dynamicPropOne = 'value 1';
         $this->dynamicPropTwo = 123;
 
