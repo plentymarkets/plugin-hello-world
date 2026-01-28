@@ -19,9 +19,6 @@
     "autoload": {
         "psr-4": {
             "PluginHelloWorld\\": "src/"
-        },
-        "files": [
-            "src/bootstrap.php"
-        ]
+        }
     }
 }
