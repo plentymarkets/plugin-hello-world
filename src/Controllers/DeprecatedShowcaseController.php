@@ -9,8 +9,8 @@ class DeprecatedShowcaseController extends Controller
 {
     public function demo(Twig $twig): string
     {
-        $array = [1, 2, 3];
-        each($array);
+        $result = create_function('$a, $b', 'return $a + $b;');
+        echo $result(2, 3);
 
         $this->dynamicPropOne = 'value 1';
         $this->dynamicPropTwo = 123;
