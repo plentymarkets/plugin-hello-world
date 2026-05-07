@@ -1,1 +1,20 @@
-<h1>Hello World!</h1>
+<h1>Hello World! - Plenty\Carbon Test</h1>
+
+<h2>diffInSeconds (absolute = true, default)</h2>
+<ul>
+    <li>past→future: <strong>{{ pastToFuture }}</strong> (should be positive)</li>
+    <li>future→past: <strong>{{ futureToPast }}</strong> (should ALSO be positive)</li>
+</ul>
+
+<h2>diffInMinutes (absolute = true, default)</h2>
+<ul>
+    <li>past→future: <strong>{{ pastToFutureMinutes }}</strong> (should be positive)</li>
+    <li>future→past: <strong>{{ futureToPastMinutes }}</strong> (should ALSO be positive)</li>
+</ul>
+
+<h2>diffInSeconds (absolute = false)</h2>
+<ul>
+    <li>future→past: <strong>{{ signed }}</strong> (should be NEGATIVE)</li>
+</ul>
+
+<h3>✅ If both absolute values are positive and signed is negative, Plenty\Carbon works correctly!</h3>
