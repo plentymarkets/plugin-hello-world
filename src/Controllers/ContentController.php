@@ -37,7 +37,8 @@ class ContentController extends Controller
 			'futureToPast' => $futureToPast,
 			'pastToFutureMinutes' => $pastToFutureMinutes,
 			'futureToPastMinutes' => $futureToPastMinutes,
-			'signed' => $signed,
+            'classPast' => get_class($past),
+            'signed' => $signed,
 		]);
 	}
 }
