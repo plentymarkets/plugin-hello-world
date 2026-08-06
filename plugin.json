@@ -5,5 +5,12 @@
       "author":"plentysystems AG",
       "type":"template",
       "serviceProvider":"HelloWorld\\Providers\\HelloWorldServiceProvider",
-      "version" : "1.0.0"
+      "version" : "1.0.0",
+      "dependencies":{
+            "paypal/rest-api-sdk-php":"1.*",
+            "guzzlehttp/guzzle":"7.*",
+            "viison/address-splitter": "0.3.4",
+            "giggsey/libphonenumber-for-php": "8.12.*",
+            "paypal/paypal-checkout-sdk": "1.0.*"
+      }
 }
